@@ -109,7 +109,6 @@ def Centralized_GD(par, x_train, y_train, file1):
 def DP_IADMM(par, x_train_agent, y_train_agent, x_train_new, y_train_new, Algorithm, file1):
 
     ## Initialization        
-    m1, m2, w, z  = Create_Models(par) ## Models.py
 
     par.W_val = np.zeros((par.num_features, par.num_classes))
     par.Z_val = np.zeros((par.split_number, par.num_features, par.num_classes)); 
