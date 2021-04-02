@@ -106,42 +106,6 @@ def Split_MNIST_Data(x_train, y_train, split_number):
     
   return x_train_new, y_train_new, x_train_agent, y_train_agent
 
-def Read_Laplacian_Noise_MNIST(par,x_train_new):
-
-  Inputfilename = "./Inputs/LaplaceNoise_P_%s_Eps_%s.csv"%(par.split_number, par.bar_epsilon)
-  f = open(Inputfilename, 'r')
-  reader = csv.reader(f)
-  print("HERE")
-  raw_noise = []
-  for row in reader:
-    # raw_noise.append(row)  
-    print(row)    
-    stop
-  print(raw_noise)
-  stop
-  tmpcnt=-1
-  for p in range(par.split_number):
-    for j in range(par.parameter_size):
-      tmpcnt+=1      
-      for t in range(10000):        
-        par.tilde_xi[t][p][j] = float(raw_noise[tmpcnt][t])
-
-
-  ###
-  x_max = np.zeros(par.parameter_size)    
-  for j in range(par.parameter_size):
-      for i in range(x_train_new.shape[0]):
-          if x_train_new[i][j].item() > x_max[j]:
-              x_max[j] = x_train_new[i][j].item() 
-  
-  #### Sensitivity (Logistic Regression)    
-  bar_Delta = 0
-  for j in range(par.parameter_size):
-      Temp = (1./par.split_number)*x_max[j] + (2.0*par.gamma/par.split_number)*par.UB
-      bar_Delta += abs(Temp)
-  
-  par.bar_lambda = 2.0*bar_Delta/par.bar_epsilon
-  
   
   
    
