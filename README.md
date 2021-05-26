@@ -8,6 +8,9 @@ In specific, the following three algorithms are implemented:
 - "ObjT":  DP-IADMM with a trust-region of solutions incorporated with the objective perturbation method. 
  
 # Install and Run 
+
+git clone https://github.com/minseok-ryu/DP-IADMM-Multiclass-Logistic.git
+
 After downloading the code, open the terminal and go to the directory where "run_1.py" exists.
 
 [1] Do the followings:
