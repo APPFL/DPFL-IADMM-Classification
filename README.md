@@ -9,15 +9,25 @@ In specific, the following three algorithms are implemented:
  
 # Install and Run 
 After downloading the code, open the terminal and go to the directory where "run_1.py" exists.
+
 [1] Do the followings:
+
 	- conda create -n DPFL
+	
 	- conda activate DPFL
+	
 	- conda install numpy
+	
 	- conda install cupy (for GPU computation)
+	
 	- pip install GPUInfo (for GPU computation)
+	
 	- pip install mlxtend (for MNIST dataset)
+	
 [2] Run:
+
 	- python run_1.py
+	
 [3] Go to "Outputs" directory to see the results 
 
 # Important Note
