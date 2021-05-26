@@ -29,12 +29,17 @@ from Main import *
 ##   Display_step = \{ "200", "5000", "10000" \}  
    
 ## Example:
+main("MNIST","10", "ObjT", "dynamic_1", "1.0", "0.05", "100", "1") 
+
+
+
+# main("MNIST","10", "OutP", "dynamic_1", "1.0", "0.05", "20000", "200") 
+# main("MNIST","10", "ObjP", "dynamic_1", "1.0", "0.05", "20000", "200") 
+# main("MNIST","10", "ObjT", "dynamic_1", "1.0", "0.05", "20000", "200") 
+# main("FEMNIST","small", "OutP", "dynamic_1", "1.0", "0.05", "20000", "200") 
+# main("FEMNIST","small", "ObjP", "dynamic_1", "1.0", "0.05", "20000", "200") 
+# main("FEMNIST","small", "ObjT", "dynamic_1", "1.0", "0.05", "20000", "200") 
+
 # for eps in ["0.05", "0.1", "1.0"]:
 #     main("MNIST","10", "ObjT", "dynamic_1", "1.0", eps, "20000", "200") 
 #     main("FEMNIST","small", "ObjT", "dynamic_1", "1.0", eps, "20000", "200") 
-
-main("MNIST","10", "OutP", "dynamic_1", "1.0", "0.05", "20000", "200") 
-main("MNIST","10", "ObjP", "dynamic_1", "1.0", "0.05", "20000", "200") 
-main("MNIST","10", "ObjT", "dynamic_1", "1.0", "0.05", "20000", "200") 
-
-# main("FEMNIST","small", "OutP", "dynamic_1", "1.0", "0.05", "20000", "200") 
