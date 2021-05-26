@@ -1,12 +1,10 @@
-# Differentially Private Inexact ADMM for a Federated Learning model
+# Differentially Private (DP) Inexact ADMM for a Federated Learning model
 
 In this open-source library, we implement inexact alternating direction method of multipliers (IADMM) algorithms for solving a distributed empirical risk minimization problem with the multi-class logistic regression function.
 In specific, the following three algorithms are implemented:
--"OutP":
--"ObjP":
--"ObjT":
- 
- 
+-"OutP": DP-IADMM with a proximal function incorporated with the output perturbation method
+-"ObjP":  DP-IADMM with a proximal function incorporated with the objective perturbation method
+-"ObjT":  DP-IADMM with a trust-region of solutions incorporated with the objective perturbation method 
  
 # Install and Run 
 After downloading the code, open the terminal and go to the directory where "run_1.py" exists.
