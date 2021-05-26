@@ -1,1 +1,0 @@
-Iter       Cost  Accuracy  Residual  Elapsed(s)  Block_1(s)  Solve_1(s)  Block_2(s)  Solve_2(s)  Noise_absmean 
