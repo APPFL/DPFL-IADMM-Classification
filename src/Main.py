@@ -5,7 +5,7 @@ import os
 from gpuinfo import GPUInfo
 
 #################################################################################################################################################
-############################# Classificatin Problem with a multi-class logistic regression loss function 
+## Differentially Private Inexact ADMM for solving a distributed ERM with a multiclass logistic regression loss function 
 #################################################################################################################################################
 
 def main(Instance, Agent, Algorithm, Hyperparameter, ScalingConst, Epsilon, TrainingSteps, DisplaySteps):
@@ -45,9 +45,8 @@ def main(Instance, Agent, Algorithm, Hyperparameter, ScalingConst, Epsilon, Trai
     uniq += 1
   file1 = open(Path,"w")
 
-  #### Training Process   
-  if par.Algorithm =="Trust" or par.Algorithm =="Prox" or  par.Algorithm == "Base":
-    W, cost, file1 = DP_IADMM(par, x_train_agent, y_train_agent, x_train_new, y_train_new, x_test, y_test, file1)
+  #### Training Process     
+  W, cost, file1 = DP_IADMM(par, x_train_agent, y_train_agent, x_train_new, y_train_new, x_test, y_test, file1)
     
   #### Testing Accuracy
   accuracy = calculate_accuracy(par, W, x_test, y_test)

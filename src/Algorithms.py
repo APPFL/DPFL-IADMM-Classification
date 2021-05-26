@@ -33,13 +33,13 @@ def DP_IADMM(par, x_train_agent, y_train_agent, x_train_new, y_train_new, x_test
         hyperparameter_rho(par, iteration)  ## see Functions.py
 
         ### [1] First Block Problem        
-        if par.Algorithm == "Base":                        
+        if par.Algorithm == "OutP":                        
             par, Runtime_1, Avg_Noise_Mag, z_change_mean = Base_First_Block_Problem_ClosedForm(par, x_train_agent, y_train_agent, iteration) ## see Models.py            
         else:                    
             par, Runtime_1 = First_Block_Problem_ClosedForm(par) ## see Models.py   
         
         ### [2] Second Block Problem        
-        if par.Algorithm == "Base":
+        if par.Algorithm == "OutP":
             par, Runtime_2 = Base_Second_Block_Problem_ClosedForm(par) ## see Models.py           
         else:
             par, Runtime_2, Avg_Noise_Mag, z_change_mean = Second_Block_Problem_ClosedForm(par, x_train_agent, y_train_agent, iteration) ## see Models.py 

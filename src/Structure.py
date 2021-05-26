@@ -25,8 +25,6 @@ class Parameters:
         self.tilde_xi = []
         self.bar_lambda = 0
         
-        
-
         self.W_val = [] 
         self.Z_val = [] 
         self.Lambdas_val = [] 

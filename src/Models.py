@@ -36,14 +36,14 @@ def Second_Block_Problem_ClosedForm(par, x_train_agent, y_train_agent, iteration
             Avg_Noise_Mag += np.mean(np.absolute(tilde_xi))  
         
         ## Update Z_val      
-        if par.Algorithm =="Prox":                   
+        if par.Algorithm =="ObjP":                   
             par.eta = float(par.a_str) / math.sqrt(iteration+1)                             
             Z_Prev = par.Z_val[p]
             Temp = (1.0/(par.rho + (1.0/par.eta)))*(-grad + par.rho*par.W_val + par.Lambdas_val[p] - tilde_xi + (1.0/par.eta)*Z_Prev)                    
             Z_Change += np.absolute(Z_Prev - Temp)                                                
             par.Z_val[p] = Temp            
 
-        if par.Algorithm =="Trust":                    
+        if par.Algorithm =="ObjT":                    
             par.eta = float(par.a_str) / (iteration+1)*(iteration+1)
             Z_Prev = par.Z_val[p]                               
             Temp = (1.0/par.rho)*(-grad + par.rho*par.W_val + par.Lambdas_val[p] - tilde_xi)                         

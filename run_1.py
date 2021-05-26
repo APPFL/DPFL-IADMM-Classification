@@ -11,9 +11,9 @@ from Main import *
 ## Note: the number of agents for FEMNIST is given, e.g., P=195 for small FEMNIST.
 
 ### [2] Algorithms:  
-## "Base":  DP-IADMM-Prox  (output perturbation)
-## "Prox":  DP-IADMM-Prox  (objective perturbation)
-## "Trust": DP-IADMM-Trust (objective perturbation)
+## "OutP":  DP-IADMM-Prox  (output perturbation)
+## "ObjP":  DP-IADMM-Prox  (objective perturbation)
+## "ObjT": DP-IADMM-Trust (objective perturbation)
 
 ### [3] Hyperparameter \rho^t
 ## "static":  \rho^t \in \{ "0.1", "1.0", "10.0" \}
@@ -30,8 +30,11 @@ from Main import *
    
 ## Example:
 # for eps in ["0.05", "0.1", "1.0"]:
-#     main("MNIST","10", "Trust", "dynamic_1", "1.0", eps, "20000", "200") 
-#     main("FEMNIST","small", "Trust", "dynamic_1", "1.0", eps, "20000", "200") 
+#     main("MNIST","10", "ObjT", "dynamic_1", "1.0", eps, "20000", "200") 
+#     main("FEMNIST","small", "ObjT", "dynamic_1", "1.0", eps, "20000", "200") 
 
+main("MNIST","10", "OutP", "dynamic_1", "1.0", "0.05", "20000", "200") 
+main("MNIST","10", "ObjP", "dynamic_1", "1.0", "0.05", "20000", "200") 
+main("MNIST","10", "ObjT", "dynamic_1", "1.0", "0.05", "20000", "200") 
 
-main("FEMNIST","small", "Prox", "dynamic_1", "1.0", "0.05", "20000", "200") 
+# main("FEMNIST","small", "OutP", "dynamic_1", "1.0", "0.05", "20000", "200") 
