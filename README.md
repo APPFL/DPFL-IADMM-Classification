@@ -1,6 +1,6 @@
 # Differentially Private Inexact ADMM for a Federated Learning model
 
-In this open-source library, we implement inexact differentially private alternating direction method of multipliers (DP-IADMM) algorithms for solving a distributed empirical risk minimization problem with the multi-class logistic regression function.
+In this open-source code, we implement inexact differentially private alternating direction method of multipliers (DP-IADMM) algorithms for solving a distributed empirical risk minimization problem with the multi-class logistic regression function.
 In specific, the following three algorithms are implemented:
 
 - "ObjT":  DP-IADMM with a trust-region of solutions incorporated with the objective perturbation method. 
