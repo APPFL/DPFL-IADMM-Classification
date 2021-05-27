@@ -16,6 +16,7 @@ git clone https://github.com/minseok-ryu/DP-IADMM-Multiclass-Logistic.git
 After downloading the code, open the terminal and go to the directory where "run_1.py" exists.
 
 1. Do the followings:
+
 ```
 conda create -n DPFL	
 conda activate DPFL	
@@ -24,14 +25,19 @@ conda install cupy
 pip install GPUInfo
 pip install mlxtend
 ```	
+
 Packages `cupy` and `GPUInfo` are required for GPU computation. `mlxtend` is required for MNIST dataset.
-1. Run:
+
+2. Run:
+
 ```
 python run_1.py
 ```	
-1. Go to "Outputs" directory to see the results 
+
+3. Go to "Outputs" directory to see the results 
 
 ## Important Note
+
 To use GPU, change from "import numpy as np" to  "import cupy as np" located in the first line of Algorithms.py, Models.py, Read.py, and Functions.py.
 
 ## Acknowledgements
