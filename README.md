@@ -3,9 +3,9 @@
 In this open-source library, we implement inexact differentially private alternating direction method of multipliers (DP-IADMM) algorithms for solving a distributed empirical risk minimization problem with the multi-class logistic regression function.
 In specific, the following three algorithms are implemented:
 
-- "OutP": DP-IADMM with a proximal function incorporated with the output perturbation method.
-- "ObjP":  DP-IADMM with a proximal function incorporated with the objective perturbation method.
 - "ObjT":  DP-IADMM with a trust-region of solutions incorporated with the objective perturbation method. 
+- "ObjP":  DP-IADMM with a proximal function incorporated with the objective perturbation method.
+- "OutP": DP-IADMM with a proximal function incorporated with the output perturbation method.
  
 ## Install and Run 
 
