@@ -81,8 +81,12 @@ def hyperparameter_rho(par, iteration):
     if par.rho_str == "dynamic_1" or par.rho_str == "dynamic_2":
         if par.Instance =="MNIST":            
             c1 = 2.0; c2=5.0; Tc = 10000.0; rhoC=1.2
-        if par.Instance =="FEMNIST":
+        elif par.Instance =="FEMNIST":
             c1 = 0.005; c2=0.05; Tc = 2000.0; rhoC=1.2
+        elif par.Instance =="CIFAR10":
+            c1 = 2.0; c2=5.0; Tc = 10000.0; rhoC=1.2
+        else:
+            raise AssertionError("Unexpected value of 'par.Instance'!", par.Instance)
             
         if par.bar_eps_str == "infty":
             par.rho = c1 * math.pow(rhoC, math.floor( (iteration+1) / Tc ) ) 
