@@ -4,6 +4,35 @@ import numpy as np #(activate this if CPU is used)
 from mlxtend.data import loadlocal_mnist
 import json
 
+import torch
+import torchvision
+import torchvision.transforms as transforms
+
+def Read_CIFAR10(par, Agent):
+  transform = transforms.Compose(
+      [transforms.ToTensor(),
+      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+  trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+  testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+
+  npixels = len(trainset.data[1][1])
+  classes = trainset.classes
+
+  par.num_features = npixels*npixels
+  par.num_classes = len(classes)
+  par.split_number = int(Agent)
+
+  # Flatten the arrays
+  x_train, x_test = trainset.data.reshape([-1, par.num_features * 3]), testset.data.reshape([-1, par.num_features * 3])
+  y_train, y_test = np.array(trainset.targets), np.array(testset.targets)
+
+  # Split data per agent
+  x_train_agent = np.array(np.split(x_train, par.split_number))
+  y_train_agent = np.array(np.split(y_train, par.split_number))
+    
+  return x_test, y_test, x_train, y_train, x_train_agent, y_train_agent
+
 def Read_MNIST(par, Agent):  
   ################################################################################################################################################
   ##### MNIST 
@@ -39,6 +68,7 @@ def Read_MNIST(par, Agent):
   x_train_new = np.concatenate( np.array(x_list) )
   y_train_new = np.concatenate( np.array(y_list) )  
     
+  # FIXME: Isn't x_train equivalent to x_train? (and y_train too)
   return x_test, y_test, x_train_new, y_train_new, x_train_agent, y_train_agent
 
   
