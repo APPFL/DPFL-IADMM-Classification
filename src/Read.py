@@ -19,12 +19,12 @@ def Read_CIFAR10(par, Agent):
   npixels = len(trainset.data[1][1])
   classes = trainset.classes
 
-  par.num_features = npixels*npixels
+  par.num_features = npixels*npixels*3 # RGB!
   par.num_classes = len(classes)
   par.split_number = int(Agent)
 
   # Flatten the arrays
-  x_train, x_test = trainset.data.reshape([-1, par.num_features * 3]), testset.data.reshape([-1, par.num_features * 3])
+  x_train, x_test = trainset.data.reshape([-1, par.num_features]), testset.data.reshape([-1, par.num_features])
   y_train, y_test = np.array(trainset.targets), np.array(testset.targets)
 
   # Split data per agent
