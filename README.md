@@ -17,16 +17,19 @@ After downloading the code, open the terminal and go to the directory where "run
 
 1. Do the followings:
 
+If you have NVIDIA GPU:
+
 ```
-conda create -n DPFL	
-conda activate DPFL	
-conda install numpy	
-conda install cupy
-pip install GPUInfo
-pip install mlxtend
+conda env create -f environment_gpu.yml
+pip install -r requirements_gpu.txt
 ```	
 
-Packages `cupy` and `GPUInfo` are required for GPU computation. `mlxtend` is required for MNIST dataset.
+Otherwise, 
+
+```
+conda env create -f environment_cpu.yml
+pip install -r requirements_cpu.txt
+```	
 
 2. Run:
 
@@ -35,10 +38,6 @@ python run_1.py
 ```	
 
 3. Go to "Outputs" directory to see the results 
-
-## Important Note
-
-To use GPU, change from "import numpy as np" to  "import cupy as np" located in the first line of Algorithms.py, Models.py, Read.py, and Functions.py.
 
 ## Acknowledgements
 
