@@ -3,15 +3,11 @@ import numpy as np #(activate this if CPU is used)
 
 import math
 from scipy.stats import matrix_normal
+from scipy.special import softmax
 import time
  
 def calculate_hypothesis(W_val, x_train):
-
-    Temp_H = np.exp( np.matmul(x_train, W_val) )
-    H = Temp_H/Temp_H.sum(axis=1)[:,None]
-    H = np.clip(H,1e-9, 1.) ## I X K matrix
-   
-    return H
+    return softmax(np.matmul(x_train, W_val), axis=1)
 
 def calculate_cost(par, num_data, H, y_train_Bin):
     return -np.sum( np.multiply(y_train_Bin, np.log(H)) ) / num_data + par.gamma * np.sum( np.square(par.W_val) )
