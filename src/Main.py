@@ -28,12 +28,14 @@ def main(Instance, Agent, Algorithm, Hyperparameter, ScalingConst, Epsilon, Trai
   if par.Instance =="MNIST":            
     x_test, y_test, x_train_new, y_train_new, x_train_agent, y_train_agent = Read_MNIST(par, Agent)   
     par.total_data = x_train_new.shape[0]  
-  if par.Instance =="FEMNIST":        
+  elif par.Instance =="FEMNIST":        
     x_test, y_test, x_train_new, y_train_new, x_train_agent, y_train_agent = Read_FEMNIST(par, Agent)
     par.total_data = x_train_new.shape[0]    
-  if par.Instance =="CIFAR10":        
+  elif par.Instance =="CIFAR10":        
     x_test, y_test, x_train_new, y_train_new, x_train_agent, y_train_agent = Read_CIFAR10(par, Agent)
-    par.total_data = x_train_new.shape[0]    
+    par.total_data = x_train_new.shape[0]
+  else:
+    raise AssertionError("Unexpected value of 'par.Instance'!", par.Instance)
   # print("par.total_data=",par.total_data)  
   
   #### Write output  
