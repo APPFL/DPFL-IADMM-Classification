@@ -1,0 +1,9 @@
+name: DP_IADMM
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - python=3.9
+  - torchvision
+  - scipy
+prefix: /Users/kibaekkim/opt/anaconda3/envs/DP_IADMM
