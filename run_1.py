@@ -1,6 +1,6 @@
-from Main import *
 import sys
 sys.path.append("./src")
+from Main import *
 
 # [1] Instances:
 # "MNIST": total number of training data => I = 60000; the number of agents => P \in \{5, 10, 50, 100, ... \}
@@ -30,8 +30,8 @@ sys.path.append("./src")
 
 # Example:
 # main("MNIST","10", "ObjT", "dynamic_1", "1.0", "0.05", "100", "1")
-# main("CIFAR10", "10", "ObjT", "dynamic_1", "1000.0", "infty", "10", "1")
-main("CIFAR10","10", "ObjT", "dynamic_1", "1000.0", "infty", "1000000", "10000")
+main("CIFAR10", "10", "ObjT", "dynamic_1", "1000.0", "infty", "10", "1")
+# main("CIFAR10","10", "ObjT", "dynamic_1", "1000.0", "infty", "1000000", "10000")
 
 
 # main("MNIST","10", "OutP", "dynamic_1", "1.0", "0.05", "20000", "200")
