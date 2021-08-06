@@ -1,0 +1,11 @@
+name: DP_IADMM
+channels:
+  - defaults
+dependencies:
+  - scipy
+  - torchvision
+  - numpy
+  - python=3.9
+  - cupy
+prefix: /home/kimk/.conda/envs/DP_IADMM
+
