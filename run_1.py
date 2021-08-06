@@ -30,6 +30,9 @@ from Main import *
    
 ## Example:
 main("MNIST","10", "ObjT", "dynamic_1", "1.0", "0.05", "100", "1") 
+# main("MNIST","10", "ObjP", "dynamic_1", "1.0", "0.05", "100", "1") 
+# main("MNIST","10", "OutP", "dynamic_1", "1.0", "0.05", "100", "1") 
+
 
 
 
