@@ -1,5 +1,7 @@
-import numpy as np #(activate this if CPU is used)
-# import cupy as np #(activate this if GPU is used)
+try:
+    import cupy as np  # (activate this if GPU is used)
+except ImportError:
+    import numpy as np  # (activate this if CPU is used)
 
 import math
 from scipy.stats import matrix_normal
@@ -7,7 +9,8 @@ from scipy.special import softmax
 import time
  
 def calculate_hypothesis(W_val, x_train):
-    return softmax(np.matmul(x_train, W_val), axis=1)
+    # FIXME: This may copy data between cpu and gpu. Consider torch.
+    return np.array(softmax(np.matmul(x_train, W_val).get(), axis=1))
 
 def calculate_cost(par, num_data, H, y_train_Bin):
     return -np.sum( np.multiply(y_train_Bin, np.log(H)) ) / num_data + par.gamma * np.sum( np.square(par.W_val) )

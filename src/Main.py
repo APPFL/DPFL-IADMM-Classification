@@ -11,8 +11,11 @@ from gpuinfo import GPUInfo
 def main(Instance, Agent, Algorithm, Hyperparameter, ScalingConst, Epsilon, TrainingSteps, DisplaySteps):
   
   GPU = GPUInfo.check_empty() # Check if GPU is used.
-  print("**********************GPU=", GPU)
-    
+  if len(GPU) > 0:
+    print("Running on GPU:", GPU)
+  else:
+    print("Running on CPU:", GPU)
+
   ## Parameters
   par = Parameters()
   par.Instance = Instance

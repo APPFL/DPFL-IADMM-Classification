@@ -1,5 +1,7 @@
-import numpy as np #(activate this if CPU is used)
-# import cupy as np #(activate this if GPU is used)
+try:
+    import cupy as np  # (activate this if GPU is used)
+except ImportError:
+    import numpy as np  # (activate this if CPU is used)
 
 import math
 from Functions import *
