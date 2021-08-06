@@ -1,5 +1,5 @@
-import numpy as np #(activate this if CPU is used)
-# import cupy as np #(activate this if GPU is used)
+# import numpy as np #(activate this if CPU is used)
+import cupy as np #(activate this if GPU is used)
 
 import math
 import time
@@ -24,7 +24,7 @@ def DP_IADMM(par, x_train_agent, y_train_agent, x_train_new, y_train_new, x_test
     
     start_time = time.time()    
     title="Iter    TrainCost     TestAcc     Violation    Elapsed(s)   Solve_1(s)   Solve_2(s)  AbsNoiseMag    Z_change     AdapRho \n"
-    print(title)    
+    print(title, end='') 
     file1.write(title)
 
     for iteration in range(par.training_steps + 1):   
@@ -59,7 +59,7 @@ def DP_IADMM(par, x_train_agent, y_train_agent, x_train_new, y_train_new, x_test
             residual = calculate_residual(par) ## Compute concensus violation (see Functions.py)
             
             results = '%4d %12.6e %12.6e %12.6e %12.2f %12.2f %12.2f %12.6e %12.6e %12.6e \n' %(iteration, cost, accuracy_test, residual, elapsed_time, Runtime_1,  Runtime_2, Avg_Noise_Mag, z_change_mean, par.rho)  
-            print(results)          
+            print(results, end='') 
             file1.write(results)            
 
     return par.W_val, cost, file1
