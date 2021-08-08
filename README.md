@@ -19,6 +19,7 @@ After downloading the code, open the terminal and go to the directory where "run
 
 ```
 conda env create -f environment.yml
+conda activate APPFL
 pip install -r requirements.txt
 ```	
 
