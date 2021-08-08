@@ -24,9 +24,8 @@ class DP_IADMM_torch:
             self.num_data.append(x_train_agent[p].shape[1])
             self.x_train_sum.append(torch.sum(x_train_agent[p], 1).to(self.device))
             self.y_train_Bin.append(
-                (torch.arange(par.num_classes) == y_train_agent[p][..., None])
+                (torch.arange(par.num_classes, dtype=torch.int8, device=self.device) == y_train_agent[p][..., None])
                 .type(torch.int8)
-                .to(self.device)
             )
 
         # Variables
@@ -67,7 +66,7 @@ class DP_IADMM_torch:
         self.linear = []
         self.loss_value = []
         for p in range(par.split_number):
-            self.linear.append(torch.nn.Linear(par.num_features, par.num_classes))
+            self.linear.append(torch.nn.Linear(par.num_features, par.num_classes).to(self.device))
             self.linear[p].weight.data.fill_(0.0)
             self.linear[p].bias.data.fill_(0.0)
             self.loss_value.append(
