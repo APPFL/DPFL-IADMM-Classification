@@ -17,18 +17,9 @@ After downloading the code, open the terminal and go to the directory where "run
 
 1. Do the followings:
 
-If you have NVIDIA GPU:
-
 ```
-conda env create -f environment_gpu.yml
-pip install -r requirements_gpu.txt
-```	
-
-Otherwise, 
-
-```
-conda env create -f environment_cpu.yml
-pip install -r requirements_cpu.txt
+conda env create -f environment.yml
+pip install -r requirements.txt
 ```	
 
 2. Run:

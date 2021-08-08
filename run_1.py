@@ -30,7 +30,7 @@ from Main import *
 
 # Example:
 # main("MNIST","10", "ObjT", "dynamic_1", "1.0", "0.05", "100", "1")
-main("CIFAR10", "10", "ObjT", "dynamic_1", "1000.0", "infty", "10", "1")
+main("CIFAR10", "10", "ObjT", "dynamic_1", "1000.0", "0.01", "100", "1")
 # main("CIFAR10","10", "ObjT", "dynamic_1", "1000.0", "infty", "1000000", "10000")
 
 

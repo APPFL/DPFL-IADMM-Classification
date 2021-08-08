@@ -1,0 +1,8 @@
+name: APPFL
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - pytorch
+  - torchvision
+prefix: /Users/kibaekkim/opt/anaconda3/envs/APPFL

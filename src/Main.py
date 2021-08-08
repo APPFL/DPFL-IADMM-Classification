@@ -2,19 +2,12 @@ from Read import *
 from Algorithms import *
 from Structure import *
 import os
-from gpuinfo import GPUInfo
 
 #################################################################################################################################################
 ## Differentially Private Inexact ADMM for solving a distributed ERM with a multiclass logistic regression loss function 
 #################################################################################################################################################
 
 def main(Instance, Agent, Algorithm, Hyperparameter, ScalingConst, Epsilon, TrainingSteps, DisplaySteps):
-  
-  GPU = GPUInfo.check_empty() # Check if GPU is used.
-  if len(GPU) > 0:
-    print("Running on GPU:", GPU)
-  else:
-    print("Running on CPU:", GPU)
 
   ## Parameters
   par = Parameters()
@@ -29,14 +22,11 @@ def main(Instance, Agent, Algorithm, Hyperparameter, ScalingConst, Epsilon, Trai
   
   ## Read Instance
   if par.Instance =="MNIST":            
-    x_test, y_test, x_train_new, y_train_new, x_train_agent, y_train_agent = Read_MNIST(par, Agent)   
-    par.total_data = x_train_new.shape[0]  
+    x_test, y_test, x_train_agent, y_train_agent = Read_MNIST(par, Agent)
   elif par.Instance =="FEMNIST":        
-    x_test, y_test, x_train_new, y_train_new, x_train_agent, y_train_agent = Read_FEMNIST(par, Agent)
-    par.total_data = x_train_new.shape[0]    
+    x_test, y_test, x_train_agent, y_train_agent = Read_FEMNIST(par, Agent)
   elif par.Instance =="CIFAR10":        
-    x_test, y_test, x_train_new, y_train_new, x_train_agent, y_train_agent = Read_CIFAR10(par, Agent)
-    par.total_data = x_train_new.shape[0]
+    x_test, y_test, x_train_agent, y_train_agent = Read_CIFAR10(par, Agent)
   else:
     raise AssertionError("Unexpected value of 'par.Instance'!", par.Instance)
   # print("par.total_data=",par.total_data)  
@@ -54,13 +44,11 @@ def main(Instance, Agent, Algorithm, Hyperparameter, ScalingConst, Epsilon, Trai
   file1 = open(Path,"w")
 
   #### Training Process     
-  W, cost, file1 = DP_IADMM(par, x_train_agent, y_train_agent, x_train_new, y_train_new, x_test, y_test, file1)
-    
-  #### Testing Accuracy
-  accuracy = calculate_accuracy(par, W, x_test, y_test)
+  algo = DP_IADMM_torch(par, x_train_agent, y_train_agent, x_test, y_test, file1)
+  cost, accuracy = algo.solve()
 
   #### PRINT & WRITE
-  GPU_is = "GPU=%s \n"%(GPU)  
+  GPU_is = "Device=%s \n"%(algo.device)  
   Instance_Name = "Instance=%s \n"%(par.Instance)
   Agent_num =  "#Agents=%s \n"%(par.split_number)  
   Feature_num =  "#Features=%s \n"%(par.num_features)  

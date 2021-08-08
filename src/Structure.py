@@ -25,14 +25,6 @@ class Parameters:
         self.tilde_xi = []
         self.bar_lambda = 0
         
-        self.W_val = [] 
-        self.Z_val = [] 
-        self.Lambdas_val = [] 
-        self.M=[]
-        self.U=[]
-        self.V=[]
-
-
         ####
         self.learning_rate = 0
         self.training_steps = 0
@@ -40,6 +32,8 @@ class Parameters:
         self.display_step = 0        
         self.num_features = 0
         self.num_classes = 0
+
+        self.device = "cpu"
        
         
         
