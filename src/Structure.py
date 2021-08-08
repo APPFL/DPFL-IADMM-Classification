@@ -32,8 +32,6 @@ class Parameters:
         self.display_step = 0        
         self.num_features = 0
         self.num_classes = 0
-
-        self.device = "cpu"
        
         
         
