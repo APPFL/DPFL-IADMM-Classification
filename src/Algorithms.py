@@ -1,6 +1,7 @@
-import torch
 import math
 import time
+import torch
+from torch.profiler import profile, record_function, ProfilerActivity
 
 # TODO: deriving sub-classes for different algorithms
 class DP_IADMM_torch:
@@ -41,6 +42,13 @@ class DP_IADMM_torch:
             dtype=torch.float32,
             device=self.device,
         )
+        self.Z_next = torch.zeros(
+            par.split_number,
+            par.num_features,
+            par.num_classes,
+            dtype=torch.float32,
+            device=self.device,
+        )
         self.Lambdas_val = torch.zeros(
             par.split_number,
             par.num_features,
@@ -63,12 +71,10 @@ class DP_IADMM_torch:
             par.num_features, par.num_classes, dtype=torch.float32, device=self.device
         )
 
-        self.linear = []
+        self.linear = torch.nn.ModuleList([torch.nn.Linear(par.num_features, par.num_classes, bias=False).to(self.device) for _ in range(par.split_number)])
         self.loss_value = []
         for p in range(par.split_number):
-            self.linear.append(torch.nn.Linear(par.num_features, par.num_classes).to(self.device))
             self.linear[p].weight.data.fill_(0.0)
-            self.linear[p].bias.data.fill_(0.0)
             self.loss_value.append(
                 torch.empty(self.num_data[p], dtype=torch.float16, device=self.device)
             )
@@ -79,20 +85,44 @@ class DP_IADMM_torch:
         self.Avg_Noise_Mag = 0
         self.Grad_Time = 0.0
         self.Noise_Time = 0.0
+        self.update_z_time = 0.0
 
     def solve(self):
 
         start_time = time.time()
         title = "Iter    TrainCost     TestAcc     Violation    Elapsed(s)   Solve_1(s)   Solve_2(s)    GradT(s)    NoiseT(s)  AbsNoiseMag    Z_change     AdapRho \n"
+        title = (
+            "%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s \n"
+            % (
+                "Iter",
+                "TrainCost",
+                "TestAcc",
+                "Violation",
+                "Elapsed(s)",
+                "Solve_1(s)",
+                "Solve_2(s)",
+                "GradT(s)",
+                "NoiseT(s)",
+                "UpdateT(s)",
+                "AbsNoiseMag",
+                "Z_change",
+                "AdapRho",
+            )
+        )
         print(title, end="")
         self.file1.write(title)
+
+        Runtime_1 = 0.0
+        Runtime_2 = 0.0
+        self.Grad_Time = 0.0
+        self.Noise_Time = 0.0
 
         for iteration in range(self.par.training_steps + 1):
 
             # Hyperparameter Rho
             self.hyperparameter_rho(iteration)
 
-            Runtime_1 = time.time()
+            stime = time.time()
 
             # [1] First Block Problem
             if self.par.Algorithm == "OutP":
@@ -100,17 +130,26 @@ class DP_IADMM_torch:
             else:
                 self.First_Block_Problem_ClosedForm()
 
-            Runtime_1 = time.time() - Runtime_1
+            Runtime_1 += time.time() - stime
 
-            Runtime_2 = time.time()
+            stime = time.time()
 
             # [2] Second Block Problem
             if self.par.Algorithm == "OutP":
                 self.Base_Second_Block_Problem_ClosedForm()
             else:
+                # with profile(
+                #     activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], 
+                #     record_shapes=True,
+                #     with_stack=True,
+                #     profile_memory=False,
+                # ) as prof:
+                #     with record_function("Second_Block_Problem_ClosedForm"):
+                #         self.Second_Block_Problem_ClosedForm(iteration)
+                # print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
                 self.Second_Block_Problem_ClosedForm(iteration)
 
-            Runtime_2 = time.time() - Runtime_2
+            Runtime_2 += time.time() - stime
 
             # [3] Dual update
             self.Lambdas_val += self.par.rho * (self.W_val - self.Z_val)
@@ -132,7 +171,7 @@ class DP_IADMM_torch:
                 )
 
                 results = (
-                    "%4d %12.6e %12.6e %12.6e %12.2f %12.2f %12.2f %12.2f %12.2f %12.6e %12.6e %12.6e \n"
+                    "%12d %12.6e %12.6e %12.6e %12.2f %12.2f %12.2f %12.2f %12.2f %12.2f %12.6e %12.6e %12.6e \n"
                     % (
                         iteration,
                         cost,
@@ -143,6 +182,7 @@ class DP_IADMM_torch:
                         Runtime_2,
                         self.Grad_Time,
                         self.Noise_Time,
+                        self.update_z_time,
                         self.Avg_Noise_Mag,
                         self.Z_Change.mean(),
                         self.par.rho,
@@ -199,8 +239,6 @@ class DP_IADMM_torch:
 
         self.Z_Change = 0
         self.Avg_Noise_Mag = 0
-        self.Grad_Time = 0.0
-        self.Noise_Time = 0.0
         for p in range(self.par.split_number):
 
             stime = time.time()
@@ -216,22 +254,22 @@ class DP_IADMM_torch:
             self.calculate_eta_Base(self.num_data[p], iteration)
 
             # Update Z_val
-            Temp = (1.0 / (self.par.rho + (1.0 / self.par.eta))) * (
+            self.Z_next[p] = (1.0 / (self.par.rho + (1.0 / self.par.eta))) * (
                 -grad
                 + self.par.rho * self.W_val
                 + self.Lambdas_val[p]
                 + (1.0 / self.par.eta) * self.Z_val[p]
             )
 
-            self.Z_Change += torch.absolute(self.Z_val[p] - Temp)
-            self.Z_val[p] = Temp
+            self.Z_Change += torch.absolute(self.Z_val[p] - self.Z_next[p])
+            self.Z_val[p] = self.Z_next[p]
 
             # Generate Matrix Normal Noise
             if self.par.bar_eps_str != "infty":
 
                 stime = time.time()
                 self.generate_matrix_normal_noise(self.num_data[p])
-                self.Noise_Time = time.time() - stime
+                self.Noise_Time += time.time() - stime
 
                 self.Z_val[p] += self.tilde_xi
                 self.Avg_Noise_Mag += torch.mean(torch.absolute(self.tilde_xi))
@@ -254,8 +292,7 @@ class DP_IADMM_torch:
 
         self.Z_Change = 0
         self.Avg_Noise_Mag = 0
-        self.Grad_Time = 0.0
-        self.Noise_Time = 0.0
+        objt_time = 0.0
         for p in range(self.par.split_number):
 
             stime = time.time()
@@ -271,38 +308,42 @@ class DP_IADMM_torch:
             if self.par.bar_eps_str != "infty":
                 stime = time.time()
                 self.generate_laplacian_noise(p, output)
-                self.Noise_Time = time.time() - stime
                 self.Avg_Noise_Mag += torch.mean(torch.absolute(self.tilde_xi))
+                self.Noise_Time += time.time() - stime
 
             # Update Z_val
             if self.par.Algorithm == "ObjP":
                 self.par.eta = float(self.par.a_str) / math.sqrt(iteration + 1)
                 Z_Prev = self.Z_val[p]
-                Temp = (1.0 / (self.par.rho + (1.0 / self.par.eta))) * (
+                self.Z_next[p] = (1.0 / (self.par.rho + (1.0 / self.par.eta))) * (
                     -grad
                     + self.par.rho * self.W_val
                     + self.Lambdas_val[p]
                     - self.tilde_xi
                     + (1.0 / self.par.eta) * Z_Prev
                 )
-                self.Z_Change += torch.absolute(Z_Prev - Temp)
-                self.Z_val[p] = Temp
+                self.Z_Change += torch.absolute(Z_Prev - self.Z_next[p])
+                self.Z_val[p] = self.Z_next[p]
 
             elif self.par.Algorithm == "ObjT":
+                stime = time.time()
+
                 self.par.eta = float(self.par.a_str) / (iteration + 1) * (iteration + 1)
                 Z_Prev = self.Z_val[p]
-                Temp = (1.0 / self.par.rho) * (
+                self.Z_next[p] = (1.0 / self.par.rho) * (
                     -grad
                     + self.par.rho * self.W_val
                     + self.Lambdas_val[p]
                     - self.tilde_xi
                 )
                 # Trust-Region using the infinity norm
-                Temp = torch.max(
-                    torch.min(Temp, Z_Prev + self.par.eta), Z_Prev - self.par.eta
+                self.Z_next[p] = torch.max(
+                    torch.min(self.Z_next[p], Z_Prev + self.par.eta), Z_Prev - self.par.eta
                 )
-                self.Z_Change += torch.absolute(Z_Prev - Temp)
-                self.Z_val[p] = Temp
+                self.Z_Change += torch.absolute(Z_Prev - self.Z_next[p])
+                self.Z_val[p] = self.Z_next[p]
+
+                self.update_z_time += time.time() - stime
 
         self.Avg_Noise_Mag = self.Avg_Noise_Mag / self.par.split_number
 
