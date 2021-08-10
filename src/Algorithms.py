@@ -125,32 +125,31 @@ class DP_IADMM_torch:
 
             stime = time.time()
 
-            # [1] First Block Problem
             if self.par.Algorithm == "OutP":
-                self.Base_First_Block_Problem_ClosedForm(iteration)
+                stime = time.time()
+                self.local_train_OutP(iteration)
+                Runtime_1 += time.time() - stime
+
+                stime = time.time()
+                self.global_parameter_update()
+                Runtime_2 += time.time() - stime
             else:
-                self.First_Block_Problem_ClosedForm()
+                stime = time.time()
+                self.global_parameter_update()
+                Runtime_1 += time.time() - stime
 
-            Runtime_1 += time.time() - stime
-
-            stime = time.time()
-
-            # [2] Second Block Problem
-            if self.par.Algorithm == "OutP":
-                self.Base_Second_Block_Problem_ClosedForm()
-            else:
+                stime = time.time()
                 # with profile(
                 #     activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], 
                 #     record_shapes=True,
                 #     with_stack=True,
                 #     profile_memory=False,
                 # ) as prof:
-                #     with record_function("Second_Block_Problem_ClosedForm"):
-                #         self.Second_Block_Problem_ClosedForm(iteration)
+                #     with record_function("local_train"):
+                #         self.local_train(iteration)
                 # print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
-                self.Second_Block_Problem_ClosedForm(iteration)
-
-            Runtime_2 += time.time() - stime
+                self.local_train(iteration)
+                Runtime_2 += time.time() - stime
 
             # [3] Dual update
             self.Lambdas_val += self.par.rho * (self.W_val - self.Z_val)
@@ -237,7 +236,7 @@ class DP_IADMM_torch:
         if par.rho > 1e9:
             par.rho = 1e9
 
-    def Base_First_Block_Problem_ClosedForm(self, iteration):
+    def local_train_OutP(self, iteration):
 
         self.Z_Change = 0
         self.Avg_Noise_Mag = 0
@@ -289,19 +288,13 @@ class DP_IADMM_torch:
 
         self.Avg_Noise_Mag = self.Avg_Noise_Mag / self.par.split_number
 
-    def Base_Second_Block_Problem_ClosedForm(self):
+    def global_parameter_update(self):
         self.W_val = (
             torch.sum(self.Z_val - self.Lambdas_val / self.par.rho, axis=0)
             / self.par.split_number
         )
 
-    def First_Block_Problem_ClosedForm(self):
-        self.W_val = (
-            torch.sum(self.Z_val - self.Lambdas_val / self.par.rho, axis=0)
-            / self.par.split_number
-        )
-
-    def Second_Block_Problem_ClosedForm(self, iteration):
+    def local_train(self, iteration):
 
         self.Z_Change = 0
         self.Avg_Noise_Mag = 0
