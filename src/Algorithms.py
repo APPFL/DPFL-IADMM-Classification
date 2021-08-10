@@ -71,7 +71,7 @@ class DP_IADMM_torch:
             par.num_features, par.num_classes, dtype=torch.float32, device=self.device
         )
 
-        self.linear = torch.nn.ModuleList([torch.nn.Linear(par.num_features, par.num_classes).to(self.device) for _ in range(par.split_number)])
+        self.linear = torch.nn.ModuleList([torch.nn.Linear(par.num_features, par.num_classes, bias=False).to(self.device) for _ in range(par.split_number)])
         self.loss_value = []
         for p in range(par.split_number):
             self.linear[p].weight.data.fill_(0.0)
@@ -246,35 +246,46 @@ class DP_IADMM_torch:
             stime = time.time()
 
             output = self.linear[p](self.x_train_agent[p])
-            self.loss_value[p] = self.loss(output, self.y_train_agent[p].long())
-            self.loss_value[p].mean().backward()
-            grad = self.linear[p].weight.grad.t()
+            self.loss_value[p] = self.loss(output, self.y_train_agent[p].long()).mean()
 
+            # Zero the gradients before running the backward pass.
+            self.linear[p].zero_grad()
+
+            # Backward pass: compute gradient of the loss
+            self.loss_value[p].backward()
+            
             self.Grad_Time += time.time() - stime
 
-            # Decide eta
-            self.calculate_eta_Base(self.num_data[p], iteration)
+            with torch.no_grad():
 
-            # Update Z_val
-            self.Z_next[p] = (1.0 / (self.par.rho + (1.0 / self.par.eta))) * (
-                -grad
-                + self.par.rho * self.W_val
-                + self.Lambdas_val[p]
-                + (1.0 / self.par.eta) * self.Z_val[p]
-            )
+                grad = self.linear[p].weight.grad.t()
 
-            self.Z_Change += torch.absolute(self.Z_val[p] - self.Z_next[p])
-            self.Z_val[p] = self.Z_next[p]
+                # Decide eta
+                self.calculate_eta_Base(self.num_data[p], iteration)
 
-            # Generate Matrix Normal Noise
-            if self.par.bar_eps_str != "infty":
+                # Update Z_val
+                self.Z_next[p] = (1.0 / (self.par.rho + (1.0 / self.par.eta))) * (
+                    -grad
+                    + self.par.rho * self.W_val
+                    + self.Lambdas_val[p]
+                    + (1.0 / self.par.eta) * self.Z_val[p]
+                )
 
-                stime = time.time()
-                self.generate_matrix_normal_noise(self.num_data[p])
-                self.Noise_Time += time.time() - stime
+                self.Z_Change += torch.absolute(self.Z_val[p] - self.Z_next[p])
+                self.Z_val[p] = self.Z_next[p]
 
-                self.Z_val[p] += self.tilde_xi
-                self.Avg_Noise_Mag += torch.mean(torch.absolute(self.tilde_xi))
+                # Generate Matrix Normal Noise
+                if self.par.bar_eps_str != "infty":
+
+                    stime = time.time()
+                    self.generate_matrix_normal_noise(self.num_data[p])
+                    self.Noise_Time += time.time() - stime
+
+                    self.Z_val[p] += self.tilde_xi
+                    self.Avg_Noise_Mag += torch.mean(torch.absolute(self.tilde_xi))
+
+                # Update the gradient to the model
+                self.linear[p].weight.data.copy_(self.Z_val[p].t())
 
         self.Avg_Noise_Mag = self.Avg_Noise_Mag / self.par.split_number
 
@@ -294,58 +305,68 @@ class DP_IADMM_torch:
 
         self.Z_Change = 0
         self.Avg_Noise_Mag = 0
-        objt_time = 0.0
         for p in range(self.par.split_number):
 
             stime = time.time()
 
             output = self.linear[p](self.x_train_agent[p])
-            self.loss_value[p] = self.loss(output, self.y_train_agent[p].long())
-            self.loss_value[p].mean().backward()
-            grad = self.linear[p].weight.grad.t()
+            self.loss_value[p] = self.loss(output, self.y_train_agent[p].long()).mean()
+
+            # Zero the gradients before running the backward pass.
+            self.linear[p].zero_grad()
+
+            # Backward pass: compute gradient of the loss
+            self.loss_value[p].backward()
 
             self.Grad_Time += time.time() - stime
 
-            # Generate Laplacian Noise
-            if self.par.bar_eps_str != "infty":
-                stime = time.time()
-                self.generate_laplacian_noise(p, output)
-                self.Avg_Noise_Mag += torch.mean(torch.absolute(self.tilde_xi))
-                self.Noise_Time += time.time() - stime
+            with torch.no_grad():
 
-            # Update Z_val
-            if self.par.Algorithm == "ObjP":
-                self.par.eta = float(self.par.a_str) / math.sqrt(iteration + 1)
-                Z_Prev = self.Z_val[p]
-                self.Z_next[p] = (1.0 / (self.par.rho + (1.0 / self.par.eta))) * (
-                    -grad
-                    + self.par.rho * self.W_val
-                    + self.Lambdas_val[p]
-                    - self.tilde_xi
-                    + (1.0 / self.par.eta) * Z_Prev
-                )
-                self.Z_Change += torch.absolute(Z_Prev - self.Z_next[p])
-                self.Z_val[p] = self.Z_next[p]
+                grad = self.linear[p].weight.grad.t()
 
-            elif self.par.Algorithm == "ObjT":
-                stime = time.time()
+                # Generate Laplacian Noise
+                if self.par.bar_eps_str != "infty":
+                    stime = time.time()
+                    self.generate_laplacian_noise(p, output)
+                    self.Avg_Noise_Mag += torch.mean(torch.absolute(self.tilde_xi))
+                    self.Noise_Time += time.time() - stime
 
-                self.par.eta = float(self.par.a_str) / (iteration + 1) * (iteration + 1)
-                Z_Prev = self.Z_val[p]
-                self.Z_next[p] = (1.0 / self.par.rho) * (
-                    -grad
-                    + self.par.rho * self.W_val
-                    + self.Lambdas_val[p]
-                    - self.tilde_xi
-                )
-                # Trust-Region using the infinity norm
-                self.Z_next[p] = torch.max(
-                    torch.min(self.Z_next[p], Z_Prev + self.par.eta), Z_Prev - self.par.eta
-                )
-                self.Z_Change += torch.absolute(Z_Prev - self.Z_next[p])
-                self.Z_val[p] = self.Z_next[p]
+                # Update Z_val
+                if self.par.Algorithm == "ObjP":
+                    self.par.eta = float(self.par.a_str) / math.sqrt(iteration + 1)
+                    Z_Prev = self.Z_val[p]
+                    self.Z_next[p] = (1.0 / (self.par.rho + (1.0 / self.par.eta))) * (
+                        -grad
+                        + self.par.rho * self.W_val
+                        + self.Lambdas_val[p]
+                        - self.tilde_xi
+                        + (1.0 / self.par.eta) * Z_Prev
+                    )
+                    self.Z_Change += torch.absolute(Z_Prev - self.Z_next[p])
+                    self.Z_val[p] = self.Z_next[p]
 
-                self.update_z_time += time.time() - stime
+                elif self.par.Algorithm == "ObjT":
+                    stime = time.time()
+
+                    self.par.eta = float(self.par.a_str) / (iteration + 1) * (iteration + 1)
+                    Z_Prev = self.Z_val[p]
+                    self.Z_next[p] = (1.0 / self.par.rho) * (
+                        -grad
+                        + self.par.rho * self.W_val
+                        + self.Lambdas_val[p]
+                        - self.tilde_xi
+                    )
+                    # Trust-Region using the infinity norm
+                    self.Z_next[p] = torch.max(
+                        torch.min(self.Z_next[p], Z_Prev + self.par.eta), Z_Prev - self.par.eta
+                    )
+                    self.Z_Change += torch.absolute(Z_Prev - self.Z_next[p])
+                    self.Z_val[p] = self.Z_next[p]
+
+                    self.update_z_time += time.time() - stime
+
+                # Update the gradient to the model
+                self.linear[p].weight.data.copy_(self.Z_val[p].t())
 
         self.Avg_Noise_Mag = self.Avg_Noise_Mag / self.par.split_number
 
@@ -424,7 +445,7 @@ class DP_IADMM_torch:
     def calculate_cost(self):
         cost = 0.0
         for p in range(self.par.split_number):
-            cost += self.loss_value[p].mean()
+            cost += self.loss_value[p].item()
 
         return cost / self.par.split_number
 
