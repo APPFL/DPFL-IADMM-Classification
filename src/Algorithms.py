@@ -71,7 +71,7 @@ class DP_IADMM_torch:
             par.num_features, par.num_classes, dtype=torch.float32, device=self.device
         )
 
-        self.linear = torch.nn.ModuleList([torch.nn.Linear(par.num_features, par.num_classes, bias=False).to(self.device) for _ in range(par.split_number)])
+        self.linear = torch.nn.ModuleList([torch.nn.Linear(par.num_features, par.num_classes).to(self.device) for _ in range(par.split_number)])
         self.loss_value = []
         for p in range(par.split_number):
             self.linear[p].weight.data.fill_(0.0)
@@ -86,13 +86,13 @@ class DP_IADMM_torch:
         self.Grad_Time = 0.0
         self.Noise_Time = 0.0
         self.update_z_time = 0.0
+        self.sampling_time = 0.0
 
     def solve(self):
 
         start_time = time.time()
-        title = "Iter    TrainCost     TestAcc     Violation    Elapsed(s)   Solve_1(s)   Solve_2(s)    GradT(s)    NoiseT(s)  AbsNoiseMag    Z_change     AdapRho \n"
         title = (
-            "%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s \n"
+            "%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s \n"
             % (
                 "Iter",
                 "TrainCost",
@@ -103,6 +103,7 @@ class DP_IADMM_torch:
                 "Solve_2(s)",
                 "GradT(s)",
                 "NoiseT(s)",
+                "SampleT(s)",
                 "UpdateT(s)",
                 "AbsNoiseMag",
                 "Z_change",
@@ -171,7 +172,7 @@ class DP_IADMM_torch:
                 )
 
                 results = (
-                    "%12d %12.6e %12.6e %12.6e %12.2f %12.2f %12.2f %12.2f %12.2f %12.2f %12.6e %12.6e %12.6e \n"
+                    "%12d %12.6e %12.6e %12.6e %12.2f %12.2f %12.2f %12.2f %12.2f %12.2f %12.2f %12.6e %12.6e %12.6e \n"
                     % (
                         iteration,
                         cost,
@@ -183,6 +184,7 @@ class DP_IADMM_torch:
                         self.Grad_Time,
                         self.Noise_Time,
                         self.update_z_time,
+                        self.sampling_time,
                         self.Avg_Noise_Mag,
                         self.Z_Change.mean(),
                         self.par.rho,
@@ -404,11 +406,13 @@ class DP_IADMM_torch:
 
         tilde_xi_shape = self.M + bar_lambda
         m = torch.distributions.laplace.Laplace(self.M, tilde_xi_shape)
-        self.tilde_xi = m.sample()
+
+        stime = time.time()
+        self.tilde_xi = m.sample().to(self.device)
+        self.sampling_time += time.time() - stime
 
     def calculate_accuracy(self):
         accuracy_test = 0.0
-        test_output = torch.argmax(self.linear[1](self.x_test), 1)
         for p in range(self.par.split_number):
             test_output = torch.argmax(self.linear[p](self.x_test), 1)
             accuracy_test += (
