@@ -427,11 +427,12 @@ class DP_IADMM_torch:
 
     def calculate_accuracy(self):
         accuracy_test = 0.0
-        for p in range(self.par.split_number):
-            test_output = torch.argmax(self.linear[p](self.x_test), 1)
-            accuracy_test += (
-                (test_output == self.y_test).type(dtype=torch.float16).mean()
-            )
+        with torch.no_grad():
+            for p in range(self.par.split_number):
+                test_output = torch.argmax(self.linear[p](self.x_test), 1)
+                accuracy_test += (
+                    (test_output == self.y_test).type(dtype=torch.float16).mean()
+                )
 
         return accuracy_test / self.par.split_number
 
