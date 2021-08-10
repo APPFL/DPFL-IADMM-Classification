@@ -10,4 +10,3 @@
 #SBATCH --output=./Slurm_outputs/Slurm_outputs_run_%a.out
 CASE_NUM=`printf %1d $SLURM_ARRAY_TASK_ID`
 srun python run_$CASE_NUM.py 
-Hellodd
